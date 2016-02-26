@@ -106,6 +106,12 @@ public class Mazewar extends JFrame {
          * the static consolePrint methods  
          */
         private static final JTextPane console = new JTextPane();
+
+        // Naming Service enabled only
+        private boolean IamNamingServer = false;
+        private NamingService namingServer; 
+
+       
       
         /** 
          * Write a message to the console followed by a newline.
@@ -145,11 +151,12 @@ public class Mazewar extends JFrame {
         /** 
          * The place where all the pieces are put together. 
          */
-        public Mazewar(String serverHost, int serverPort) throws IOException,
-                                                ClassNotFoundException {
+        public Mazewar(String serverHost, int serverPort, 
+                       String clientAddr, boolean startNaming, int totalPlayer) 
+                                    throws IOException, ClassNotFoundException {
                 super("ECE419 Mazewar");
                 consolePrintLn("ECE419 Mazewar started!");
-                
+
                 // Create the maze
                 maze = new MazeImpl(new Point(mazeWidth, mazeHeight), mazeSeed);
                 assert(maze != null);
@@ -165,7 +172,16 @@ public class Mazewar extends JFrame {
                 if((name == null) || (name.length() == 0)) {
                   Mazewar.quit();
                 }
-                
+
+                //If I'm the dedicated naming service
+                if (startNaming) {
+                  startNamingServer(totalPlayer);
+                  namingServer.addClient(clientAddr, serverPort, name);
+                }
+                else {
+                  //Do nothing for now
+                }
+                                
                 mSocket = new MSocket(serverHost, serverPort);
                 //Send hello packet to server
                 MPacket hello = new MPacket(name, MPacket.HELLO, MPacket.HELLO_INIT);
@@ -285,7 +301,15 @@ public class Mazewar extends JFrame {
                 new Thread(new ClientListenerThread(mSocket, clientTable)).start();    
         }
 
-        
+        //Start a naming server
+        private boolean startNamingServer(int totalPlayer) {
+          IamNamingServer = true;
+
+          namingServer = new NamingService(totalPlayer);
+
+          return IamNamingServer;
+        }
+
         /**
          * Entry point for the game.  
          * @param args Command-line arguments.
@@ -295,49 +319,21 @@ public class Mazewar extends JFrame {
 
              String host = args[0];
              int port = Integer.parseInt(args[1]);
-             boolean first = false;
+             String myAddr = args[2];
              int totalPlayer = 0;
+             boolean startNaming = false;
 
              // Check if this is actually first client...
-             if (args.length > 1) {
-               if (args[2].equals("first") {
-                 first = true;  
-                 totalPlayer = Integer.parseInt(args[3]);
-                 if(Debug.debug) System.out.println("First Client with "+totalPlayer+" Players");
+             if (args.length == 5) {
+               if (args[3].equals("first")) {
+                 totalPlayer = Integer.parseInt(args[4]);
+                 startNaming = true;
                }
              }
 
-             // Start a naming service if I'm the first client
-             if (first) {
-                
-             }
-
              /* Create the GUI */
-             Mazewar mazewar = new Mazewar(host, port);
+             Mazewar mazewar = new Mazewar(host, port, myAddr, startNaming, totalPlayer);
              mazewar.startThreads();
         }
-}
-
-class Player {
-
-  private boolean alive;
-  private int join_ID;
-
-  public Player(boolean alive, int join_ID) {
-    this.alive = alive;
-    this.join_ID = join_ID;
-  }
-
-  public void set_alive(boolean alive) {
-    this.alive = alive;
-  }
-
-  public boolean get_alive() {
-    return alive;
-  }
-
-  public int get_ID() {
-    return join_ID;
-  }
 }
 
