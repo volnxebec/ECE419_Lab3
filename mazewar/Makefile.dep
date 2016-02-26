@@ -209,6 +209,10 @@ Mazewar.class : MSocket.java
 Mazewar.class : MSocket.class
 Mazewar.class : NamingService.java
 Mazewar.class : NamingService.class
+Mazewar.class : NamingServiceListenerThread.java
+Mazewar.class : NamingServiceListenerThread.class
+Mazewar.class : NamingServiceSenderThread.java
+Mazewar.class : NamingServiceSenderThread.class
 MPacket.class : MPacket.java
 MPacket.class : Player.java
 MPacket.class : Player.class
@@ -221,6 +225,8 @@ MSocket.class : PairKey.class
 NamingService.class : NamingService.java
 NamingService.class : PlayerLoc.java
 NamingService.class : PlayerLoc.class
+NamingServiceListenerThread.class : NamingServiceListenerThread.java
+NamingServiceSenderThread.class : NamingServiceSenderThread.java
 PairKey.class : PairKey.java
 PlayerLoc.class : PlayerLoc.java
 OverheadMazePanel.class : OverheadMazePanel.java

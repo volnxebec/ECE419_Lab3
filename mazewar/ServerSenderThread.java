@@ -42,6 +42,7 @@ public class ServerSenderThread implements Runnable {
                 //Get a random location for player
                 Point point =
                     new Point(randomGen.nextInt(hello.mazeWidth),
+
                           randomGen.nextInt(hello.mazeHeight));
                 
                 //Start them all facing North

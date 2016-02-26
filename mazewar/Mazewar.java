@@ -110,8 +110,9 @@ public class Mazewar extends JFrame {
         // Naming Service enabled only
         private boolean IamNamingServer = false;
         private NamingService namingServer; 
-
-       
+        private MServerSocket namingServerSocket = null;
+        private MSocket[] namingSocketList = null;
+        private BlockingQueue namingEventQueue = null;      
       
         /** 
          * Write a message to the console followed by a newline.
@@ -175,7 +176,7 @@ public class Mazewar extends JFrame {
 
                 //If I'm the dedicated naming service
                 if (startNaming) {
-                  startNamingServer(totalPlayer);
+                  startNamingServer(totalPlayer, serverPort);
                   namingServer.addClient(clientAddr, serverPort, name);
                 }
                 else {
@@ -302,10 +303,14 @@ public class Mazewar extends JFrame {
         }
 
         //Start a naming server
-        private boolean startNamingServer(int totalPlayer) {
+        private boolean startNamingServer(int totalPlayer, int port) 
+                                                  throws IOException{
           IamNamingServer = true;
 
-          namingServer = new NamingService(totalPlayer);
+          namingServer = new NamingService(totalPlayer, port);
+          namingServerSocket = new MServerSocket(port);
+          namingSocketList = new MSocket[totalPlayer];
+          namingEventQueue = new LinkedBlockingQueue<MPacket>();
 
           return IamNamingServer;
         }

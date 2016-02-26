@@ -1,10 +1,13 @@
 import java.io.Serializable;
+import java.util.List;
+import java.util.LinkedList;
 
 public class MPacket implements Serializable {
 
     /*The following are the type of events*/
     public static final int HELLO = 100;
     public static final int ACTION = 200;
+    public static final int NAMING = 300;
 
     /*The following are the specific action 
     for each type*/
@@ -19,6 +22,11 @@ public class MPacket implements Serializable {
     public static final int LEFT = 203;
     public static final int RIGHT = 204;
     public static final int FIRE = 205;
+
+    /*Naming*/
+    public static final int NAMING_REGISTER = 301;
+    public static final int NAMING_REQUEST = 302;
+    public static final int NAMING_REPLY = 303;
     
     //These fields characterize the event  
     public int type;
@@ -35,6 +43,11 @@ public class MPacket implements Serializable {
     public int mazeHeight;
     public int mazeWidth; 
     public Player[] players;
+
+    //These are used to register client locations
+    public String clientAddr;
+    public int clientPort;
+    public List<PlayerLoc> clientLocation;
 
     public MPacket(int type, int event){
         this.type = type;
