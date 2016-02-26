@@ -57,29 +57,4 @@ public class Server {
     }
 }
 
-class Player {
-
-  private boolean alive;
-  private int join_ID;
-
-  public Player(boolean alive, int join_ID) {
-    this.alive = alive;
-    this.join_ID = join_ID;
-  }
-
-  public void set_alive(boolean alive) {
-    this.alive = alive;
-  }
-
-  public boolean get_alive() {
-    return alive;
-  }
-
-  public int get_ID() {
-    return join_ID;
-  }
-}
-
-
-
 

@@ -295,8 +295,49 @@ public class Mazewar extends JFrame {
 
              String host = args[0];
              int port = Integer.parseInt(args[1]);
+             boolean first = false;
+             int totalPlayer = 0;
+
+             // Check if this is actually first client...
+             if (args.length > 1) {
+               if (args[2].equals("first") {
+                 first = true;  
+                 totalPlayer = Integer.parseInt(args[3]);
+                 if(Debug.debug) System.out.println("First Client with "+totalPlayer+" Players");
+               }
+             }
+
+             // Start a naming service if I'm the first client
+             if (first) {
+                
+             }
+
              /* Create the GUI */
              Mazewar mazewar = new Mazewar(host, port);
              mazewar.startThreads();
         }
 }
+
+class Player {
+
+  private boolean alive;
+  private int join_ID;
+
+  public Player(boolean alive, int join_ID) {
+    this.alive = alive;
+    this.join_ID = join_ID;
+  }
+
+  public void set_alive(boolean alive) {
+    this.alive = alive;
+  }
+
+  public boolean get_alive() {
+    return alive;
+  }
+
+  public int get_ID() {
+    return join_ID;
+  }
+}
+
