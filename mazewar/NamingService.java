@@ -11,17 +11,34 @@ public class NamingService {
 
   private List<PlayerLoc> playerNames; //Store location of players
 
+  private MServerSocket namingServerSocket = null;
+  private MSocket[] namingSocketList = null; //A list of MSockets
+  private BlockingQueue namingEventQueue = null; //A list of events
+
   //private MServerSocket mServerSocket = null;
   //private MSocket[] mSocketList = null; //A list of MSockets
   //private BlockingQueue eventQueue = null; //A list of events
   
-  public NamingService(int maxClient, int port) {
+  public NamingService(int maxClient, int port) throws IOException{
     this.clientTotal = maxClient;
     this.clientCount = 0;
     playerNames = new LinkedList<PlayerLoc>();
-    //mServerSocket = new MServerSocket(port);
-    //mSocketList = new MSocket[MAX_CLIENTS];
-    //eventQueue = new LinkedBlockingQueue<MPacket>();
+    if(Debug.debug) System.out.println("Listening on port: " + port);
+    namingServerSocket = new MServerSocket(port);
+    namingSocketList = new MSocket[clientTotal];
+    namingEventQueue = new LinkedBlockingQueue<MPacket>();
+  }
+
+  public void startThreads() throws IOException {
+    while (clientCount < clientTotal) {
+      MSocket namingSocket = namingServerSocket.accept();
+      new Thread(new NamingServiceListenerThread(namingSocket,
+                                    namingEventQueue)).start();
+      namingSocketList[clientCount] = namingSocket;
+      clientCount++;
+    }
+    new Thread(new NamingServiceSenderThread(namingSocketList,
+                                             namingEventQueue, this)).start();
   }
 
   public void addClient(String host, int port, String name) {
@@ -31,5 +48,13 @@ public class NamingService {
 
   public List<PlayerLoc> getPlayerLocation() {
     return playerNames;
+  }
+
+  public static void main(String args[]) throws IOException {
+    if(Debug.debug) System.out.println("Starting the naming service");
+    int port = Integer.parseInt(args[0]);
+    int totalPlayers = Integer.parseInt(args[1]); 
+    NamingService nameServer = new NamingService(totalPlayers, port);
+    nameServer.startThreads();
   }
 }

@@ -71,6 +71,9 @@ public class MPacket implements Serializable {
             case 200:
                 typeStr = "ACTION";
                 break;
+            case 300:
+                typeStr = "NAMING";
+                break;
             default:
                 typeStr = "ERROR";
                 break;        
@@ -96,6 +99,15 @@ public class MPacket implements Serializable {
                 break;
             case 205:
                 eventStr = "FIRE";
+                break;
+            case 301:
+                eventStr = "NAMING_REGISTER";
+                break;
+            case 302:
+                eventStr = "NAMING_REQUEST";
+                break;
+            case 303:
+                eventStr = "NAMING_REPLY";
                 break;
             default:
                 eventStr = "ERROR";
