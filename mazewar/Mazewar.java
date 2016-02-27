@@ -34,6 +34,9 @@ import java.net.Socket;
 import java.util.Hashtable;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.io.InvalidObjectException;
+import java.util.List;
+import java.util.LinkedList;
 
 /**
  * The entry point and glue code for the game.  It also contains some helpful
@@ -110,9 +113,14 @@ public class Mazewar extends JFrame {
         // Naming Service enabled only
         private boolean IamNamingServer = false;
         private NamingService namingServer; 
+        private int totalClientCount;
         private MServerSocket namingServerSocket = null;
         private MSocket[] namingSocketList = null;
+        private List<PlayerLoc> clientLocation;
         private BlockingQueue namingEventQueue = null;      
+
+        // Register for Naming Service
+        private MSocket clientNamingSocket = null;
       
         /** 
          * Write a message to the console followed by a newline.
@@ -181,6 +189,24 @@ public class Mazewar extends JFrame {
                 }
                 else {
                   //Do nothing for now
+                  clientNamingSocket = new MSocket(serverHost, serverPort);
+                  MPacket namingRegister = new MPacket(name, 
+                                            MPacket.NAMING, MPacket.NAMING_REGISTER);
+                  namingRegister.clientAddr = clientAddr;
+                  namingRegister.clientPort = serverPort;
+                  if(Debug.debug) System.out.println("Registering Client Location");
+                  mSocket.writeObject(namingRegister);
+                  if(Debug.debug) System.out.println("Registeration sent");
+                  MPacket namingReply = (MPacket)mSocket.readObject();
+                  if(Debug.debug) System.out.println("Received Name Reply from server");
+                  //Sanity check...
+                  if (namingReply.type != MPacket.NAMING) {
+                    throw new InvalidObjectException("Expecting NAMING Packet");
+                  }
+                  if (namingReply.event != MPacket.NAMING_REPLY) {
+                    throw new InvalidObjectException("Expecting NAMING_REPLY Packet");
+                  }
+                  clientLocation = namingReply.clientLocation;
                 }
                                 
                 mSocket = new MSocket(serverHost, serverPort);
@@ -295,17 +321,36 @@ public class Mazewar extends JFrame {
          and the ClientListenerThread which is responsible for 
          listening for events
         */
-        private void startThreads(){
+        private void startThreads() throws IOException {
+                int clientCount = 1;
+                //Start naming server....
+                if (IamNamingServer) {
+                  while (clientCount < totalClientCount) {
+                    MSocket namingSocket = namingServerSocket.accept();
+                    new Thread(new NamingServiceListenerThread(namingSocket, 
+                                                          namingEventQueue)).start();
+                    namingSocketList[clientCount] = namingSocket;
+                    clientCount++;
+                  }
+                  new Thread(new NamingServiceSenderThread(namingSocketList, 
+                                            namingEventQueue, namingServer)).start();
+                }
+                //If Iam not naming server, I need to connect to it
+                else {
+                  
+                }
+
                 //Start a new sender thread 
-                new Thread(new ClientSenderThread(mSocket, eventQueue)).start();
+                //new Thread(new ClientSenderThread(mSocket, eventQueue)).start();
                 //Start a new listener thread 
-                new Thread(new ClientListenerThread(mSocket, clientTable)).start();    
+                //new Thread(new ClientListenerThread(mSocket, clientTable)).start();    
         }
 
         //Start a naming server
         private boolean startNamingServer(int totalPlayer, int port) 
                                                   throws IOException{
           IamNamingServer = true;
+          totalClientCount = totalPlayer;
 
           namingServer = new NamingService(totalPlayer, port);
           namingServerSocket = new MServerSocket(port);
@@ -321,6 +366,17 @@ public class Mazewar extends JFrame {
          */
         public static void main(String args[]) throws IOException,
                                         ClassNotFoundException{
+
+            /*
+              Input as follows
+
+              If NamingServer enabled (for first client)
+              Mazewar <serverHost> <serverPort> <clientAddr> <"first"> <totalPlayer>
+
+              If not NamingServer (for clients other than first)
+              Mazewar <serverHost> <serverPort> <clientAddr>
+            
+            */
 
              String host = args[0];
              int port = Integer.parseInt(args[1]);
