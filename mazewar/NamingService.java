@@ -41,8 +41,9 @@ public class NamingService {
                                              namingEventQueue, this)).start();
   }
 
-  public void addClient(String host, int port, String name) {
+  public void addClient(String host, int port, String name, Point point, int direction) {
     PlayerLoc clientLoc = new PlayerLoc(host, port, name);
+    clientLoc.init_player(point, direction);
     playerNames.add(clientLoc);
   }
 

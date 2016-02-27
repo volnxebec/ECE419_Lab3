@@ -16,8 +16,13 @@ public class NamingServiceSenderThread implements Runnable {
   }                            
 
   public void handleNamingRegister() {
+
     int playerCount = mSocketList.length;
     MPacket namingRegister = null;
+
+    Random randomGen = null;
+    
+
     try {
       for (int i=0; i<playerCount; i++) {
         namingRegister = (MPacket) this.eventQueue.take();
@@ -27,8 +32,15 @@ public class NamingServiceSenderThread implements Runnable {
         if (namingRegister.event != MPacket.NAMING_REGISTER) {
           throw new InvalidObjectException("Expecting NAMING_REGISTER Packet");
         }
+
+        if (randomGen == null) {
+          randomGen = new Random(namingRegister.mazeSeed);
+        }
+        Point point = new Point(randomGen.nextInt(namingRegister.mazeWidth),
+                                randomGen.nextInt(namingRegister.mazeHeight));
         namingServer.addClient(namingRegister.clientAddr, 
-                               namingRegister.clientPort, namingRegister.name);
+                               namingRegister.clientPort, namingRegister.name,
+                               point, Player.North);
       }
       //After all clients registered, broadcast location to everyone....
       namingRegister.event = MPacket.NAMING_REPLY;

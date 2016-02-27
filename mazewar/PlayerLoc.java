@@ -7,6 +7,7 @@ class PlayerLoc implements Serializable {
   private String nameID;
   private String clientHost;
   private int clientPort;
+  private Player clientInit;
 
   public PlayerLoc(String host, int port, String name) {
     this.alive = true;
@@ -35,8 +36,17 @@ class PlayerLoc implements Serializable {
     return clientPort;
   }
 
+  public void init_player(Point point, int direction) {
+    clientInit = new Player(nameID, point, direction);
+  }
+
+  public Player get_player() {
+    return clientInit;
+  }
+
   public String toString() {
     return " HOST: " + clientHost + " PORT: " + clientPort + " ID: " + nameID;
   }
+
 }
 

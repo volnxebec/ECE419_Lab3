@@ -37,6 +37,7 @@ import java.util.concurrent.BlockingQueue;
 import java.io.InvalidObjectException;
 import java.util.List;
 import java.util.LinkedList;
+import java.net.ConnectException;
 
 /**
  * The entry point and glue code for the game.  It also contains some helpful
@@ -86,7 +87,13 @@ public class Mazewar extends JFrame {
         /**
          * Connect to peer clients in a Ring... 
          */
-        private MServerSocket clientServerSocket = null;
+        private MServerSocket clientSlaveSocket = null;
+        private MSocket clientMasterSocket = null;
+
+        /**
+         * Utilities
+         */
+        private String myName;
 
         /**
          * The {@link GUIClient} for the game.
@@ -179,6 +186,7 @@ public class Mazewar extends JFrame {
                 if((name == null) || (name.length() == 0)) {
                   Mazewar.quit();
                 }
+                myName = name;
 
                 //Register with Naming Service
                 clientNamingSocket = new MSocket(serverHost, serverPort);
@@ -186,6 +194,8 @@ public class Mazewar extends JFrame {
                                           MPacket.NAMING, MPacket.NAMING_REGISTER);
                 namingRegister.clientAddr = clientAddr;
                 namingRegister.clientPort = clientPort;
+                namingRegister.mazeWidth = mazeWidth;
+                namingRegister.mazeHeight = mazeHeight;
                 if (Debug.debug) System.out.println("Registering Client Location");
                 clientNamingSocket.writeObject(namingRegister);
                 if (Debug.debug) System.out.println("Registeration Sent");
@@ -200,37 +210,63 @@ public class Mazewar extends JFrame {
                 }
                 clientLocation = namingReply.clientLocation;
 
-                for (PlayerLoc location : clientLocation) {
-                  System.out.println("Name: "+location.get_ID()+
-                                     ", Addr: "+location.get_host()+
-                                     ", Port: "+location.get_port()+
-                                     ", Alive: "+location.get_alive());
-                }
-
                 //Initializing clientServer Socket for peers to connect to...
-                clientServerSocket = new MServerSocket(clientPort);
+                clientSlaveSocket = new MServerSocket(clientPort);
 
-                mSocket = new MSocket(serverHost, serverPort);
+                //mSocket = new MSocket(serverHost, serverPort);
                 //Send hello packet to server
-                MPacket hello = new MPacket(name, MPacket.HELLO, MPacket.HELLO_INIT);
-                hello.mazeWidth = mazeWidth;
-                hello.mazeHeight = mazeHeight;
+                //MPacket hello = new MPacket(name, MPacket.HELLO, MPacket.HELLO_INIT);
+                //hello.mazeWidth = mazeWidth;
+                //hello.mazeHeight = mazeHeight;
                 
-                if(Debug.debug) System.out.println("Sending hello");
-                mSocket.writeObject(hello);
-                if(Debug.debug) System.out.println("hello sent");
+                //if(Debug.debug) System.out.println("Sending hello");
+                //mSocket.writeObject(hello);
+                //if(Debug.debug) System.out.println("hello sent");
                 //Receive response from server
-                MPacket resp = (MPacket)mSocket.readObject();
-                if(Debug.debug) System.out.println("Received response from server");
+                //MPacket resp = (MPacket)mSocket.readObject();
+                //if(Debug.debug) System.out.println("Received response from server");
 
                 //Initialize queue of events
                 eventQueue = new LinkedBlockingQueue<MPacket>();
                 //Initialize hash table of clients to client name 
                 clientTable = new Hashtable<String, Client>(); 
                 
+                //int clientID = 0;
+                //PlayerLoc prevLoc = null;
+                for (PlayerLoc location : clientLocation) {
+                  System.out.println("Name: "+location.get_ID()+
+                                     ", Addr: "+location.get_host()+
+                                     ", Port: "+location.get_port()+
+                                     ", Alive: "+location.get_alive());
+                  Player player = location.get_player();
+                  if(player.name.equals(name)){
+                    if(Debug.debug)System.out.println("Adding guiClient: " + player);
+                    guiClient = new GUIClient(name, eventQueue);
+                    maze.addClientAt(guiClient, player.point, player.direction);
+                    this.addKeyListener(guiClient);
+                    clientTable.put(player.name, guiClient);
+                    //Connect to previous member of list...
+                    // If I'm the first client, I connect to the last client
+                    //if (clientID == 0) {
+                    //  prevLoc = clientLocation.get(clientLocation.size()-1);
+                    //}
+                    //clientMasterSocket = new MSocket(prevLoc.get_host(),
+                    //                                 prevLoc.get_port());
+                  }else{
+                    if(Debug.debug)System.out.println("Adding remoteClient: " + player);
+                    RemoteClient remoteClient = new RemoteClient(player.name);
+                    maze.addClientAt(remoteClient, player.point, player.direction);
+                    clientTable.put(player.name, remoteClient);
+                  }
+                  //prevLoc = location;
+                  //clientID++;
+                }
+
+                if(Debug.debug)System.out.println("BILL_DBG 1");
+
                 // Create the GUIClient and connect it to the KeyListener queue
                 //RemoteClient remoteClient = null;
-                for(Player player: resp.players){  
+                /*for(Player player: resp.players){  
                         if(player.name.equals(name)){
                         	if(Debug.debug)System.out.println("Adding guiClient: " + player);
                                 guiClient = new GUIClient(name, eventQueue);
@@ -243,7 +279,7 @@ public class Mazewar extends JFrame {
                                 maze.addClientAt(remoteClient, player.point, player.direction);
                                 clientTable.put(player.name, remoteClient);
                         }
-                }
+                }*/
                 
                 // Use braces to force constructors not to be called at the beginning of the
                 // constructor.
@@ -261,16 +297,22 @@ public class Mazewar extends JFrame {
                 overheadPanel = new OverheadMazePanel(maze, guiClient);
                 assert(overheadPanel != null);
                 maze.addMazeListener(overheadPanel);
+
+                if(Debug.debug)System.out.println("BILL_DBG 2");
                 
                 // Don't allow editing the console from the GUI
                 console.setEditable(false);
                 console.setFocusable(false);
                 console.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder()));
                
+                if(Debug.debug)System.out.println("BILL_DBG 3");
+                
                 // Allow the console to scroll by putting it in a scrollpane
                 JScrollPane consoleScrollPane = new JScrollPane(console);
                 assert(consoleScrollPane != null);
                 consoleScrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Console"));
+                
+                if(Debug.debug)System.out.println("BILL_DBG 4");
                 
                 // Create the score table
                 scoreTable = new JTable(scoreModel);
@@ -278,15 +320,21 @@ public class Mazewar extends JFrame {
                 scoreTable.setFocusable(false);
                 scoreTable.setRowSelectionAllowed(false);
 
+                if(Debug.debug)System.out.println("BILL_DBG 5");
+                
                 // Allow the score table to scroll too.
                 JScrollPane scoreScrollPane = new JScrollPane(scoreTable);
                 assert(scoreScrollPane != null);
                 scoreScrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Scores"));
                 
+                if(Debug.debug)System.out.println("BILL_DBG 6");
+                
                 // Create the layout manager
                 GridBagLayout layout = new GridBagLayout();
                 GridBagConstraints c = new GridBagConstraints();
                 getContentPane().setLayout(layout);
+                
+                if(Debug.debug)System.out.println("BILL_DBG 7");
                 
                 // Define the constraints on the components.
                 c.fill = GridBagConstraints.BOTH;
@@ -302,18 +350,27 @@ public class Mazewar extends JFrame {
                 c.weightx = 1.0;
                 layout.setConstraints(scoreScrollPane, c);
                                 
+                if(Debug.debug)System.out.println("BILL_DBG 8");
+                
                 // Add the components
                 getContentPane().add(overheadPanel);
                 getContentPane().add(consoleScrollPane);
                 getContentPane().add(scoreScrollPane);
                 
+                if(Debug.debug)System.out.println("BILL_DBG 9");
+                
                 // Pack everything neatly.
                 pack();
 
+                if(Debug.debug)System.out.println("BILL_DBG 10");
+                
                 // Let the magic begin.
                 setVisible(true);
                 overheadPanel.repaint();
                 this.requestFocusInWindow();
+
+                if(Debug.debug)System.out.println("BILL_DBG 11");
+                
         }
 
         /*
@@ -324,8 +381,48 @@ public class Mazewar extends JFrame {
         */
         private void startThreads() throws IOException {
 
-                //Start accepting peer client connections
-                MSocket peerSocket = clientServerSocket.accept();
+                if(Debug.debug) System.out.println("Waiting for peer to connect");
+
+                int clientID = 0;
+                PlayerLoc prevLoc = null;
+                for (PlayerLoc location : clientLocation) {
+                  Player player = location.get_player();
+                  if(player.name.equals(myName)){
+                    if (clientID == 0) {
+                      MSocket peerSocket = clientSlaveSocket.accept();
+                      prevLoc = clientLocation.get(clientLocation.size()-1);
+                      while (true) {
+                        try {
+                          clientMasterSocket = new MSocket(prevLoc.get_host(),
+                                                           prevLoc.get_port());
+                          if(Debug.debug) System.out.println(myName+" connected to "+
+                                                             prevLoc.get_player().name);
+                          break;
+                        } catch (ConnectException e) {
+                          if(Debug.debug) System.out.println("Try connection again");
+                        }
+                      }
+                    }
+                    else {
+                      while (true) {
+                        try {
+                          clientMasterSocket = new MSocket(prevLoc.get_host(),
+                                                           prevLoc.get_port());
+                          if(Debug.debug) System.out.println(myName+" connected to "+
+                                                             prevLoc.get_player().name);
+                          MSocket peerSocket = clientSlaveSocket.accept();
+                          break;
+                        } catch (ConnectException e) {
+                          if(Debug.debug) System.out.println("Try connection again");
+                        }
+                      }
+                    }
+                  }
+                  prevLoc = location;
+                  clientID++;
+                }
+                
+                if(Debug.debug) System.out.println("Peer successfully connected");
 
                 //Start a new sender thread 
                 new Thread(new ClientSenderThread(mSocket, eventQueue)).start();
