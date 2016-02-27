@@ -186,6 +186,7 @@ public class Mazewar extends JFrame {
                 if (startNaming) {
                   startNamingServer(totalPlayer, serverPort);
                   namingServer.addClient(clientAddr, serverPort, name);
+                  if(Debug.debug) System.out.println("Initialized Naming Server");
                 }
                 else {
                   //Do nothing for now
@@ -387,6 +388,7 @@ public class Mazewar extends JFrame {
              // Check if this is actually first client...
              if (args.length == 5) {
                if (args[3].equals("first")) {
+                 System.out.println("Naming Server Enabled");
                  totalPlayer = Integer.parseInt(args[4]);
                  startNaming = true;
                }
