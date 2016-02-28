@@ -11,12 +11,12 @@ public class NamingService {
 
   private List<PlayerLoc> playerNames; //Store location of players
 
-  private MServerSocket namingServerSocket = null;
-  private MSocket[] namingSocketList = null; //A list of MSockets
+  private MServerSocketNoDrop namingServerSocket = null;
+  private MSocketNoDrop[] namingSocketList = null; //A list of MSocketNoDrops
   private BlockingQueue namingEventQueue = null; //A list of events
 
-  //private MServerSocket mServerSocket = null;
-  //private MSocket[] mSocketList = null; //A list of MSockets
+  //private MServerSocketNoDrop mServerSocket = null;
+  //private MSocketNoDrop[] mSocketList = null; //A list of MSocketNoDrops
   //private BlockingQueue eventQueue = null; //A list of events
   
   public NamingService(int maxClient, int port) throws IOException{
@@ -24,14 +24,14 @@ public class NamingService {
     this.clientCount = 0;
     playerNames = new LinkedList<PlayerLoc>();
     if(Debug.debug) System.out.println("Listening on port: " + port);
-    namingServerSocket = new MServerSocket(port);
-    namingSocketList = new MSocket[clientTotal];
+    namingServerSocket = new MServerSocketNoDrop(port);
+    namingSocketList = new MSocketNoDrop[clientTotal];
     namingEventQueue = new LinkedBlockingQueue<MPacket>();
   }
 
   public void startThreads() throws IOException {
     while (clientCount < clientTotal) {
-      MSocket namingSocket = namingServerSocket.accept();
+      MSocketNoDrop namingSocket = namingServerSocket.accept();
       new Thread(new NamingServiceListenerThread(namingSocket,
                                     namingEventQueue)).start();
       namingSocketList[clientCount] = namingSocket;

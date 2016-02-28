@@ -4,11 +4,11 @@ import java.util.concurrent.BlockingQueue;
 import java.util.Random;
 
 public class NamingServiceSenderThread implements Runnable {
-  private MSocket[] mSocketList = null;
+  private MSocketNoDrop[] mSocketList = null;
   private BlockingQueue eventQueue = null;
   private NamingService namingServer = null;
 
-  public NamingServiceSenderThread(MSocket[] mSocketList, 
+  public NamingServiceSenderThread(MSocketNoDrop[] mSocketList, 
                   BlockingQueue eventQueue, NamingService naming){
     this.mSocketList = mSocketList;
     this.eventQueue = eventQueue;
@@ -46,7 +46,7 @@ public class NamingServiceSenderThread implements Runnable {
       namingRegister.event = MPacket.NAMING_REPLY;
       namingRegister.clientLocation = namingServer.getPlayerLocation();
       if(Debug.debug) System.out.println("Sending " + namingRegister);
-      for(MSocket mSocket: mSocketList){
+      for(MSocketNoDrop mSocket: mSocketList){
         mSocket.writeObject(namingRegister);
       }
     } catch (InterruptedException e){

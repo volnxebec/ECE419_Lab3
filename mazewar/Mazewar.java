@@ -38,6 +38,9 @@ import java.io.InvalidObjectException;
 import java.util.List;
 import java.util.LinkedList;
 import java.net.ConnectException;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeoutException;
 
 /**
  * The entry point and glue code for the game.  It also contains some helpful
@@ -81,7 +84,7 @@ public class Mazewar extends JFrame {
         /**
          * Connect to Naming Server
          */
-        private MSocket clientNamingSocket = null;
+        private MSocketNoDrop clientNamingSocket = null;
         private List<PlayerLoc> clientLocation;
 
         /**
@@ -90,6 +93,10 @@ public class Mazewar extends JFrame {
         private MServerSocket clientSlaveSocket = null;
         private MSocket clientMasterSocket = null;
         private MSocket peerSocket = null;
+
+        /**
+         * Indicate current state
+         */
 
         /**
          * Utilities
@@ -192,18 +199,64 @@ public class Mazewar extends JFrame {
                 myName = name;
 
                 //Register with Naming Service
-                clientNamingSocket = new MSocket(serverHost, serverPort);
+                clientNamingSocket = new MSocketNoDrop(serverHost, serverPort);
                 MPacket namingRegister = new MPacket(name,
                                           MPacket.NAMING, MPacket.NAMING_REGISTER);
                 namingRegister.clientAddr = clientAddr;
                 namingRegister.clientPort = clientPort;
                 namingRegister.mazeWidth = mazeWidth;
                 namingRegister.mazeHeight = mazeHeight;
+
                 if (Debug.debug) System.out.println("Registering Client Location");
-                clientNamingSocket.writeObject(namingRegister);
-                if (Debug.debug) System.out.println("Registeration Sent");
+                
+                
+
+
+                while (true) {
+                  try {
+                    if (Debug.debug) System.out.println("Registeration Sent");
+                    clientNamingSocket.writeObject(namingRegister);
+
+                    Thread thread = new Thread(new Runnable() {
+                      @Override
+                      public void run() {
+                        try {
+                          MPacket namingAck = (MPacket) clientNamingSocket.readObject();
+                          if (namingAck.type != MPacket.NAMING) {
+                            throw new InvalidObjectException("Expecting NAMING Packet");
+                          }
+                          if (namingAck.event != MPacket.NAMING_ACK) {
+                            throw new InvalidObjectException("Expecting NAMING_ACK Packet");
+                          }
+                          if (Debug.debug) System.out.println("Received Name Ack from Server");
+                        } catch (Exception e) {
+                          e.printStackTrace();
+                        }
+                      }
+                    });
+
+                    long endTimeMillis = System.currentTimeMillis() + 1000;
+                    boolean resend = false;
+                    thread.start();
+                    while (thread.isAlive()) {
+                      if (System.currentTimeMillis() > endTimeMillis) {
+                        System.out.println("Packet dropped... need to resend");
+                        resend = true;
+                        break;
+                      }
+                    }
+
+                    if (resend) continue;
+                    else break;
+
+                  } catch (Exception e){
+                    e.printStackTrace();
+                  }
+                }
+
                 MPacket namingReply = (MPacket)clientNamingSocket.readObject();
                 if (Debug.debug) System.out.println("Received Name Reply from Server");
+                if (Debug.debug) System.out.println(namingReply);
                 //Sanity check...
                 if (namingReply.type != MPacket.NAMING) {
                   throw new InvalidObjectException("Expecting NAMING Packet");

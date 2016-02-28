@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Date;
 
-public class MSocket{
+public class MSocketNoDrop{
     /*
      * This class is used as a wrapper around sockets and streams.
      * In addition to allowing network communication,
@@ -51,9 +51,9 @@ public class MSocket{
     //0 means no drops
     //for a large number of drops set to >0.5
     //Packets are only droped on send
-    public final double DROP_RATE = 0.2;
+    public final double DROP_RATE = 0; 
 
-    //Number of milli seconds after this MSocket is created
+    //Number of milli seconds after this MSocketNoDrop is created
     //that packets are transmitted without network errors
     public final long ERROR_FREE_TRANSMISSION_PERIOD = 30000; //30 seconds
 
@@ -86,7 +86,7 @@ public class MSocket{
     private long rcvdBytes;
     private long sentBytes;
 
-    //Time of creation of this MSocket
+    //Time of creation of this MSocketNoDrop
     private Date creationTime;
 
     /*************Helper Classes*************/
@@ -234,7 +234,7 @@ public class MSocket{
     /*
      *This creates a regular socket
      */
-    public MSocket(String host, int port) throws IOException{
+    public MSocketNoDrop(String host, int port) throws IOException{
         socket = new Socket(host, port);
         //NOTE: outputStream should be initialized before
         //inputStream, otherwise it will block
@@ -262,7 +262,7 @@ public class MSocket{
 
     //Similar to above, except takes an initialized socket
     //NOTE: This constructor is for internal use only
-    public MSocket(Socket soc) throws IOException{
+    public MSocketNoDrop(Socket soc) throws IOException{
         socket = soc;
 
         out = new ObjectOutputStream(socket.getOutputStream());

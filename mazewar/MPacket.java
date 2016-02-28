@@ -30,6 +30,7 @@ public class MPacket implements Serializable {
     public static final int NAMING_REGISTER = 301;
     public static final int NAMING_REQUEST = 302;
     public static final int NAMING_REPLY = 303;
+    public static final int NAMING_ACK = 304;
     
     /*Token*/
     public static final int TOKEN_PASS = 401;
@@ -151,6 +152,9 @@ public class MPacket implements Serializable {
                 break;
             case 303:
                 eventStr = "NAMING_REPLY";
+                break;
+            case 304:
+                eventStr = "NAMING_ACK";
                 break;
             case 401:
                 eventStr = "TOKEN_PASS";

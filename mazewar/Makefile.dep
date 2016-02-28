@@ -207,6 +207,8 @@ Mazewar.class : ClientEvent.java
 Mazewar.class : ClientEvent.class
 Mazewar.class : MSocket.java
 Mazewar.class : MSocket.class
+Mazewar.class : MSocketNoDrop.java
+Mazewar.class : MSocketNoDrop.class
 Mazewar.class : NamingService.java
 Mazewar.class : NamingService.class
 Mazewar.class : NamingServiceListenerThread.java
@@ -225,12 +227,16 @@ MPacket.class : PlayerMove.class
 MServerSocket.class: MServerSocket.java
 MServerSocket.class: MSocket.java
 MServerSocket.class: MSocket.class
+MServerSocketNoDrop.class : MServerSocketNoDrop.java
 MSocket.class : MSocket.java
 MSocket.class : PairKey.java
 MSocket.class : PairKey.class
+MSocketNoDrop.class : MSocketNoDrop.java
 NamingService.class : NamingService.java
 NamingService.class : PlayerLoc.java
 NamingService.class : PlayerLoc.class
+NamingService.class : MServerSocketNoDrop.java
+NamingService.class : MServerSocketNoDrop.class
 NamingServiceListenerThread.class : NamingServiceListenerThread.java
 NamingServiceSenderThread.class : NamingServiceSenderThread.java
 PairKey.class : PairKey.java
