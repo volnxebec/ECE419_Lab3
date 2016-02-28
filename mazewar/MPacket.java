@@ -70,10 +70,13 @@ public class MPacket implements Serializable {
     }
 
 //////////////////////
-    public void addPlayerMoves(int move, String owner) {
-      if (clientMoves == null) {
-        clientMoves = new LinkedList<PlayerMove>();
+    public void initPlayerMoves() {
+      if (this.clientMoves == null) {
+        this.clientMoves = new LinkedList<PlayerMove>();
       }
+    }
+
+    public void addPlayerMoves(int move, String owner) {
       PlayerMove newMove = new PlayerMove(move, owner);
       clientMoves.add(newMove);
     }

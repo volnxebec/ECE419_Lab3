@@ -388,12 +388,15 @@ public class Mazewar extends JFrame {
 
                 if(Debug.debug) System.out.println("Waiting for peer to connect");
 
+                boolean firstToken = false;
+
                 int clientID = 0;
                 PlayerLoc prevLoc = null;
                 for (PlayerLoc location : clientLocation) {
                   Player player = location.get_player();
                   if(player.name.equals(myName)){
                     if (clientID == 0) {
+                      firstToken = true;
                       peerSocket = clientSlaveSocket.accept();
                       prevLoc = clientLocation.get(clientLocation.size()-1);
                       while (true) {
@@ -429,13 +432,16 @@ public class Mazewar extends JFrame {
                 
                 if(Debug.debug) System.out.println("Peer successfully connected");
 
-                //Start a master sender and listener thread
-
                 //Start a slave sender and listener thread
                 new Thread(new ClientSlaveSenderThread(myName, peerSocket, clientTable,
                                           eventQueue, tokenRecQueue, tokenPasQueue)).start();
-                new Thread(new ClientSlaveListenerThread(peerSocket, tokenRecQueue)).start();
+                new Thread(new ClientSlaveListenerThread(peerSocket, firstToken,
+                                                         tokenRecQueue)).start();
 
+                //Start a master sender and listener thread
+                new Thread(new ClientMasterSenderThread(clientMasterSocket, 
+                                                        tokenPasQueue)).start();
+                
                 //Start a new sender thread 
                 //new Thread(new ClientSenderThread(mSocket, eventQueue)).start();
                 //Start a new listener thread 

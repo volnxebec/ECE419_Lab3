@@ -1,6 +1,5 @@
 import java.io.Serializable;
 
-
 class PlayerLoc implements Serializable {
 
   private boolean alive;

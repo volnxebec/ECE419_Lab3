@@ -1,4 +1,6 @@
-class PlayerMove {
+import java.io.Serializable;
+
+class PlayerMove implements Serializable {
   private int move;
   private String owner;
 
