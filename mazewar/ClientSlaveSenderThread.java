@@ -95,7 +95,7 @@ public class ClientSlaveSenderThread implements Runnable {
             //if(Debug.debug) System.out.println("ClientSlaveSenderThread pos8");
 
             //Add to token...
-            token.addPlayerMoves(oldEvent.event, name);
+            token.addPlayerMoves(oldEvent.event, name, oldEvent.projectileMoveID);
           }
 
           //if(Debug.debug) System.out.println("ClientSlaveSenderThread pos9");
@@ -115,6 +115,8 @@ public class ClientSlaveSenderThread implements Runnable {
               client.turnRight();
             } else if (validMove.get_move() == MPacket.FIRE) {
               client.fire();
+            } else if (validMove.get_move() == MPacket.PROJECTILE_MOVE) {
+              client.projectileMove(validMove);
             } else {
               throw new UnsupportedOperationException();
             }

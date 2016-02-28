@@ -24,6 +24,7 @@ public class MPacket implements Serializable {
     public static final int LEFT = 203;
     public static final int RIGHT = 204;
     public static final int FIRE = 205;
+    public static final int PROJECTILE_MOVE = 206;
 
     /*Naming*/
     public static final int NAMING_REGISTER = 301;
@@ -43,6 +44,9 @@ public class MPacket implements Serializable {
     
     //The sequence number of the event
     public int sequenceNumber;
+
+    //Whose projectile is this?
+    public int projectileMoveID;
 
     //These are used to initialize the board
     public int mazeSeed;
@@ -76,8 +80,8 @@ public class MPacket implements Serializable {
       }
     }
 
-    public void addPlayerMoves(int move, String owner) {
-      PlayerMove newMove = new PlayerMove(move, owner);
+    public void addPlayerMoves(int move, String owner, int prjID) {
+      PlayerMove newMove = new PlayerMove(move, owner, prjID);
       clientMoves.add(newMove);
     }
 
@@ -135,6 +139,9 @@ public class MPacket implements Serializable {
                 break;
             case 205:
                 eventStr = "FIRE";
+                break;
+            case 206:
+                eventStr = "PROJECTILE_MOVE";
                 break;
             case 301:
                 eventStr = "NAMING_REGISTER";

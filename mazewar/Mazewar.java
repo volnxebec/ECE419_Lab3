@@ -235,6 +235,10 @@ public class Mazewar extends JFrame {
                 tokenPasQueue = new LinkedBlockingQueue<MPacket>();
                 //Initialize hash table of clients to client name 
                 clientTable = new Hashtable<String, Client>(); 
+
+                //Link eventQueue with MazeImpl instance
+                maze.linkEventQueue(eventQueue);
+                maze.setMyName(name);
                 
                 //int clientID = 0;
                 //PlayerLoc prevLoc = null;

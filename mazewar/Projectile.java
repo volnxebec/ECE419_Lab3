@@ -30,6 +30,10 @@ public class Projectile {
          */
         private final Client owner;
         
+        private boolean readyToMove = false;
+
+        public int ID = 0;
+        
         /**
          * Create a new {@link Projectile} owned by the specified
          * {@link Client}.
@@ -46,5 +50,17 @@ public class Projectile {
          */
         public Client getOwner() {
                 return this.owner;
+        }
+
+        public void allowMove() {
+          readyToMove = true;
+        }
+
+        public void stopMove() {
+          readyToMove = false;
+        }
+
+        public boolean getMove() {
+          return readyToMove;
         }
 }
