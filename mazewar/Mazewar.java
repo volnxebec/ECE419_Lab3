@@ -89,6 +89,7 @@ public class Mazewar extends JFrame {
          */
         private MServerSocket clientSlaveSocket = null;
         private MSocket clientMasterSocket = null;
+        private MSocket peerSocket = null;
 
         /**
          * Utilities
@@ -110,6 +111,8 @@ public class Mazewar extends JFrame {
          * A queue of events.
          */
         private BlockingQueue eventQueue = null;
+        private BlockingQueue tokenRecQueue = null;
+        private BlockingQueue tokenPasQueue = null;
         
         /**
          * The panel that displays the {@link Maze}.
@@ -228,6 +231,8 @@ public class Mazewar extends JFrame {
 
                 //Initialize queue of events
                 eventQueue = new LinkedBlockingQueue<MPacket>();
+                tokenRecQueue = new LinkedBlockingQueue<MPacket>();
+                tokenPasQueue = new LinkedBlockingQueue<MPacket>();
                 //Initialize hash table of clients to client name 
                 clientTable = new Hashtable<String, Client>(); 
                 
@@ -389,7 +394,7 @@ public class Mazewar extends JFrame {
                   Player player = location.get_player();
                   if(player.name.equals(myName)){
                     if (clientID == 0) {
-                      MSocket peerSocket = clientSlaveSocket.accept();
+                      peerSocket = clientSlaveSocket.accept();
                       prevLoc = clientLocation.get(clientLocation.size()-1);
                       while (true) {
                         try {
@@ -410,7 +415,7 @@ public class Mazewar extends JFrame {
                                                            prevLoc.get_port());
                           if(Debug.debug) System.out.println(myName+" connected to "+
                                                              prevLoc.get_player().name);
-                          MSocket peerSocket = clientSlaveSocket.accept();
+                          peerSocket = clientSlaveSocket.accept();
                           break;
                         } catch (ConnectException e) {
                           if(Debug.debug) System.out.println("Try connection again");
@@ -424,10 +429,17 @@ public class Mazewar extends JFrame {
                 
                 if(Debug.debug) System.out.println("Peer successfully connected");
 
+                //Start a master sender and listener thread
+
+                //Start a slave sender and listener thread
+                new Thread(new ClientSlaveSenderThread(myName, peerSocket, clientTable,
+                                          eventQueue, tokenRecQueue, tokenPasQueue)).start();
+                new Thread(new ClientSlaveListenerThread(peerSocket, tokenRecQueue)).start();
+
                 //Start a new sender thread 
-                new Thread(new ClientSenderThread(mSocket, eventQueue)).start();
+                //new Thread(new ClientSenderThread(mSocket, eventQueue)).start();
                 //Start a new listener thread 
-                new Thread(new ClientListenerThread(mSocket, clientTable)).start();    
+                //new Thread(new ClientListenerThread(mSocket, clientTable)).start();    
         }
 
         

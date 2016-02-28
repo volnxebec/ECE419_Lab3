@@ -213,6 +213,10 @@ Mazewar.class : NamingServiceListenerThread.java
 Mazewar.class : NamingServiceListenerThread.class
 Mazewar.class : NamingServiceSenderThread.java
 Mazewar.class : NamingServiceSenderThread.class
+Mazewar.class : ClientSlaveSenderThread.java
+Mazewar.class : ClientSlaveSenderThread.class
+Mazewar.class : ClientSlaveListenerThread.java
+Mazewar.class : ClientSlaveListenerThread.class
 MPacket.class : MPacket.java
 MPacket.class : Player.java
 MPacket.class : Player.class
@@ -399,3 +403,5 @@ ScoreTableModel.class : Direction.class
 ScoreTableModel.class : ClientEvent.java
 ScoreTableModel.class : ClientEvent.class
 SortedMultiSet.class : SortedMultiSet.java
+ClientSlaveSenderThread.class : ClientSlaveSenderThread.java
+ClientSlaveListenerThread.class : ClientSlaveListenerThread.java
