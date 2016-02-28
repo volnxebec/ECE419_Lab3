@@ -1,3 +1,4 @@
+import java.util.*;
 import java.io.Serializable;
 import java.util.List;
 import java.util.LinkedList;
@@ -8,6 +9,7 @@ public class MPacket implements Serializable {
     public static final int HELLO = 100;
     public static final int ACTION = 200;
     public static final int NAMING = 300;
+    public static final int TOKEN = 400;
 
     /*The following are the specific action 
     for each type*/
@@ -28,6 +30,10 @@ public class MPacket implements Serializable {
     public static final int NAMING_REQUEST = 302;
     public static final int NAMING_REPLY = 303;
     
+    /*Token*/
+    public static final int TOKEN_PASS = 401;
+    public static final int TOKEN_ACK = 402;
+
     //These fields characterize the event  
     public int type;
     public int event; 
@@ -49,6 +55,9 @@ public class MPacket implements Serializable {
     public int clientPort;
     public List<PlayerLoc> clientLocation;
 
+    //These are used to current Queued up moves...
+    public Queue<PlayerMove> clientMoves;
+
     public MPacket(int type, int event){
         this.type = type;
         this.event = event;
@@ -59,7 +68,28 @@ public class MPacket implements Serializable {
         this.type = type;
         this.event = event;
     }
-    
+
+//////////////////////
+    public void addPlayerMoves(int move, String owner) {
+      if (clientMoves == null) {
+        clientMoves = new LinkedList<PlayerMove>();
+      }
+      PlayerMove newMove = new PlayerMove(move, owner);
+      clientMoves.add(newMove);
+    }
+
+    public boolean removeMoveIfOwner(String owner) {
+      boolean removed = false;
+      if (clientMoves != null && !clientMoves.isEmpty()) {
+        PlayerMove oldMove = clientMoves.peek();
+        if (oldMove.get_owner().equals(owner)) {
+          clientMoves.remove();
+          removed = true;
+        }
+      }
+      return removed;
+    }
+///////////////////////    
     public String toString(){
         String typeStr;
         String eventStr;
@@ -73,6 +103,9 @@ public class MPacket implements Serializable {
                 break;
             case 300:
                 typeStr = "NAMING";
+                break;
+            case 400:
+                typeStr = "TOKEN";
                 break;
             default:
                 typeStr = "ERROR";
@@ -109,6 +142,12 @@ public class MPacket implements Serializable {
             case 303:
                 eventStr = "NAMING_REPLY";
                 break;
+            case 401:
+                eventStr = "TOKEN_PASS";
+                break;
+            case 402:
+                eventStr = "TOKEN_ACK";
+                break;
             default:
                 eventStr = "ERROR";
                 break;        
@@ -120,3 +159,4 @@ public class MPacket implements Serializable {
     }
 
 }
+

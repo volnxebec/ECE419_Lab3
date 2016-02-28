@@ -216,6 +216,8 @@ Mazewar.class : NamingServiceSenderThread.class
 MPacket.class : MPacket.java
 MPacket.class : Player.java
 MPacket.class : Player.class
+MPacket.class : PlayerMove.java
+MPacket.class : PlayerMove.class
 MServerSocket.class: MServerSocket.java
 MServerSocket.class: MSocket.java
 MServerSocket.class: MSocket.class
@@ -229,6 +231,7 @@ NamingServiceListenerThread.class : NamingServiceListenerThread.java
 NamingServiceSenderThread.class : NamingServiceSenderThread.java
 PairKey.class : PairKey.java
 PlayerLoc.class : PlayerLoc.java
+PlayerMove.class : PlayerMove.java
 OverheadMazePanel.class : OverheadMazePanel.java
 OverheadMazePanel.class : RobotClient.java
 OverheadMazePanel.class : RobotClient.class
