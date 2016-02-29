@@ -37,10 +37,13 @@ Making and Running
 To make the project run
 make
 
-To run the server:
-</path/to/java/>java Server <listening port>
+To run the Naming Service:
+./naming_server.sh <naming port> <total player>
+  Example: ./naming_server.sh 8000 3
+
 
 To run the clients: 
-</path/to/java/>java Mazewar <server host> <server port>
+./run.sh <naming host> <naming port> <my address> <my port>
+  Example: ./run.sh ug232.eecg.utoronto.ca 8000 ug232.eecg.utoronto.ca 8002
 
 
