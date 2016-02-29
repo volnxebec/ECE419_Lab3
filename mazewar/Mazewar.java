@@ -210,49 +210,17 @@ public class Mazewar extends JFrame {
                 if (Debug.debug) System.out.println("Registering Client Location");
                 
                 
+                if (Debug.debug) System.out.println("Registeration Sent");
+                clientNamingSocket.writeObject(namingRegister);
 
-
-                while (true) {
-                  try {
-                    if (Debug.debug) System.out.println("Registeration Sent");
-                    clientNamingSocket.writeObject(namingRegister);
-
-                    Thread thread = new Thread(new Runnable() {
-                      @Override
-                      public void run() {
-                        try {
-                          MPacket namingAck = (MPacket) clientNamingSocket.readObject();
-                          if (namingAck.type != MPacket.NAMING) {
-                            throw new InvalidObjectException("Expecting NAMING Packet");
-                          }
-                          if (namingAck.event != MPacket.NAMING_ACK) {
-                            throw new InvalidObjectException("Expecting NAMING_ACK Packet");
-                          }
-                          if (Debug.debug) System.out.println("Received Name Ack from Server");
-                        } catch (Exception e) {
-                          e.printStackTrace();
-                        }
-                      }
-                    });
-
-                    long endTimeMillis = System.currentTimeMillis() + 1000;
-                    boolean resend = false;
-                    thread.start();
-                    while (thread.isAlive()) {
-                      if (System.currentTimeMillis() > endTimeMillis) {
-                        System.out.println("Packet dropped... need to resend");
-                        resend = true;
-                        break;
-                      }
-                    }
-
-                    if (resend) continue;
-                    else break;
-
-                  } catch (Exception e){
-                    e.printStackTrace();
-                  }
+                MPacket namingAck = (MPacket) clientNamingSocket.readObject();
+                if (namingAck.type != MPacket.NAMING) {
+                  throw new InvalidObjectException("Expecting NAMING Packet");
                 }
+                if (namingAck.event != MPacket.NAMING_ACK) {
+                  throw new InvalidObjectException("Expecting NAMING_ACK Packet");
+                }
+                if (Debug.debug) System.out.println("Received Name Ack from Server");
 
                 MPacket namingReply = (MPacket)clientNamingSocket.readObject();
                 if (Debug.debug) System.out.println("Received Name Reply from Server");

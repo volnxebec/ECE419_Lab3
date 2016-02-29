@@ -42,6 +42,7 @@ public class ClientSlaveSenderThread implements Runnable {
         if (!tokenRecQueue.isEmpty()) {
           //Grab the token
           token = (MPacket)tokenRecQueue.take();  
+          token.name = name;
 
           if (token.type != MPacket.TOKEN) {
             throw new InvalidObjectException("Expecting TOKEN Packet");
@@ -53,8 +54,8 @@ public class ClientSlaveSenderThread implements Runnable {
           //if(Debug.debug) System.out.println("ClientSlaveSenderThread pos2");
 
           //Send back an Ack...
-          ack = new MPacket(name, MPacket.TOKEN, MPacket.TOKEN_ACK);
-          mSocket.writeObject(ack);
+          //ack = new MPacket(name, MPacket.TOKEN, MPacket.TOKEN_ACK);
+          //mSocket.writeObject(ack);
 
           //if(Debug.debug) System.out.println("ClientSlaveSenderThread pos3");
 
