@@ -1,36 +1,47 @@
 Introduction
 ============
-This implements a client-server Mazewar game. 
+This implements a decentralized server Mazewar game. 
 Additionally, the MSocket class can be used to 
 induce errors, such as adding delays and reordering packets.
 
 
 Architecture
 ============
-The server starts and listens on some port.
+The naming service starts and listen on some port.
 
-When a client contacts the server, the server spawns a 
-ServerListenerThread. Server.java defines the MAX_CLIENTS constant 
-that determines the maximum number of clients that join.
+When a client contacts the naming service, the naming service starts a 
+NamingServiceListenerThread and adds the client's location to its client 
+list. When all clients have contacted the naming service, the naming service 
+spawns NamingServiceSenderThread and broadcast the location
+of every client to each client.
 
-When the expected number of clients have contacted the 
-server, the server spawns a single ServerSenderThreads, that broadcasts 
-the name and location of all the clients (this requires that names
-must be unique).
+When a client receives the location of all clients, it makes a connection
+to its next neighbour as indicated by the naming service broadcast message.
+The transmitter of the messesage is handled by ClientMasterSenderThread and
+the receiver is handled by both ClientSlaveSenderThread and 
+ClientSlaveListenerThread
 
-When an event happens, it is sent to the server. The server
-stamps the event with a global sequence number and broadcasts to all 
-hosts.
+A single token is passed around the clients in a round-robin fashion.
+When an event happens within a client, it is stored in its local queue. 
+The moment a client receives the token, it removes the top of the token 
+queue until the moves are no longer his, then he appends his own local 
+queue to the token queue, while deleting the moves he appended from his
+local queue. Then he performs all the moves in the token queue and pass it
+to the next client.
 
-The client and server communicates using MSockets, and MServerSockets
+For more details about the design see the Design Document included.
+
+The peer-to-peer connections are done using MSockets, and MServerSockets
 which are analogous to Sockets and ServerSockets. MSockets are 
 constructed by passing a host address and port. MSockets expose two 
 main methods, readObject and writeObject to read and write objects, respectively. 
 
-The MSocket can reorder packets and add delays based on 
-3 constants defined in MSocket.java, namely DELAY_WEIGHT, DELAY_THRESHOLD, 
-UNORDER_FACTOR. Errors are added both on sending and receiveing packets.
+The client to naming service connections are done using special MSocketsNoDrop 
+and MServerSocketsNoDrop to ensure that no packets are dropped during the initial
+client registration phase.
 
+The MSocket can reorder packets, add delays based, and drop packets on 
+4 constants defined in MSocket.java, namely DELAY_WEIGHT, DELAY_THRESHOLD, 
 
 Making and Running
 ==================
