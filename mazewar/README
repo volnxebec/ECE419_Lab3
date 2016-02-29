@@ -42,6 +42,8 @@ client registration phase.
 
 The MSocket can reorder packets, add delays based, and drop packets on 
 4 constants defined in MSocket.java, namely DELAY_WEIGHT, DELAY_THRESHOLD, 
+UNORDER_FACTOR, and DROP_RATE. Errors are added both on sending and receiveing packets.
+
 
 Making and Running
 ==================
